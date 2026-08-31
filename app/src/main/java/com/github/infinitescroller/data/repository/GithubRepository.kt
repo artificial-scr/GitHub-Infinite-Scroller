@@ -22,7 +22,7 @@ class GithubRepository(private val api: GithubApiService) {
         ).flow
     }
 
-    private fun buildQuery(tags: Set<String>): String {
+    internal fun buildQuery(tags: Set<String>): String {
         return if (tags.isEmpty()) {
             "stars:>1000"
         } else {

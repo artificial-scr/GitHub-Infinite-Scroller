@@ -5,13 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.github.infinitescroller.data.api.RetrofitClient
 import com.github.infinitescroller.data.preferences.TagPreferences
+import com.github.infinitescroller.data.preferences.TagStore
 import com.github.infinitescroller.data.repository.GithubRepository
 import com.github.infinitescroller.ui.feed.FeedViewModel
 import com.github.infinitescroller.ui.tags.TagViewModel
 
 class ViewModelFactory(context: Context) : ViewModelProvider.Factory {
 
-    private val tagPreferences = TagPreferences(context.applicationContext)
+    private val tagPreferences: TagStore = TagPreferences(context.applicationContext)
     private val repository = GithubRepository(RetrofitClient.githubApiService)
 
     @Suppress("UNCHECKED_CAST")

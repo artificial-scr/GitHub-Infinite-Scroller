@@ -60,4 +60,6 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.coil.compose)
     debugImplementation(libs.androidx.ui.tooling)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.kotlinx.coroutines.test)
 }
