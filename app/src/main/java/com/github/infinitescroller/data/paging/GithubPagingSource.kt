@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.github.infinitescroller.data.api.GithubApiService
 import com.github.infinitescroller.data.model.GithubRepo
+import kotlinx.coroutines.CancellationException
 
 class GithubPagingSource(
     private val api: GithubApiService,
@@ -19,17 +20,25 @@ class GithubPagingSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GithubRepo> {
         val page = params.key ?: 1
+        val perPage = params.loadSize.coerceAtMost(100)
         return try {
             val response = api.searchRepositories(
                 query = query,
                 page = page,
-                perPage = params.loadSize.coerceAtMost(100),
+                perPage = perPage,
             )
+            val nextKey = when {
+                response.items.isEmpty() -> null
+                page * perPage >= 1000 -> null
+                else -> page + 1
+            }
             LoadResult.Page(
                 data = response.items,
                 prevKey = if (page == 1) null else page - 1,
-                nextKey = if (response.items.isEmpty()) null else page + 1,
+                nextKey = nextKey,
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             LoadResult.Error(e)
         }

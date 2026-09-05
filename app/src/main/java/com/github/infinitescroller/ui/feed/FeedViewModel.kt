@@ -9,6 +9,7 @@ import com.github.infinitescroller.data.preferences.TagStore
 import com.github.infinitescroller.data.repository.GithubRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -18,6 +19,7 @@ class FeedViewModel(
 ) : ViewModel() {
 
     val repos: Flow<PagingData<GithubRepo>> = tagPreferences.selectedTags
+        .distinctUntilChanged()
         .flatMapLatest { tags -> repository.getRepos(tags) }
         .cachedIn(viewModelScope)
 }

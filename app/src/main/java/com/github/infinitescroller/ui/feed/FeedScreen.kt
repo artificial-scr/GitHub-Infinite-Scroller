@@ -1,5 +1,6 @@
 package com.github.infinitescroller.ui.feed
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.github.infinitescroller.data.model.GithubRepo
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +65,11 @@ fun FeedScreen(
                 .padding(padding),
         ) {
             RepoList(repos = repos, onRepoClick = { url ->
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                } catch (_: ActivityNotFoundException) {
+                    // No browser installed — silently ignore
+                }
             })
         }
     }
@@ -75,13 +81,7 @@ private fun RepoList(
     onRepoClick: (String) -> Unit,
 ) {
     val refreshState = repos.loadState.refresh
-    if (refreshState is LoadState.Error) {
-        ErrorState(
-            message = refreshState.error.message ?: "Something went wrong",
-            onRetry = { repos.retry() },
-        )
-        return
-    }
+
     if (refreshState is LoadState.NotLoading && repos.itemCount == 0) {
         EmptyState()
         return
@@ -92,6 +92,15 @@ private fun RepoList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
+        if (refreshState is LoadState.Error) {
+            item {
+                ErrorBanner(
+                    message = friendlyError(refreshState.error),
+                    onRetry = { repos.retry() },
+                )
+            }
+        }
+
         items(count = repos.itemCount, key = repos.itemKey { it.id }) { index ->
             repos[index]?.let { repo ->
                 RepoCard(repo = repo, onClick = { onRepoClick(repo.htmlUrl) })
@@ -108,8 +117,8 @@ private fun RepoList(
                 }
             }
             is LoadState.Error -> item {
-                ErrorState(
-                    message = append.error.message ?: "Failed to load more",
+                ErrorBanner(
+                    message = friendlyError(append.error),
                     onRetry = { repos.retry() },
                 )
             }
@@ -118,22 +127,29 @@ private fun RepoList(
     }
 }
 
+private fun friendlyError(error: Throwable): String {
+    if (error is HttpException && (error.code() == 403 || error.code() == 429)) {
+        return "GitHub rate limit exceeded. Please wait a moment and try again."
+    }
+    return error.message ?: "Something went wrong"
+}
+
 @Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        androidx.compose.foundation.layout.Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(32.dp),
-        ) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Button(onClick = onRetry) { Text("Retry") }
-        }
+private fun ErrorBanner(message: String, onRetry: () -> Unit) {
+    androidx.compose.foundation.layout.Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onRetry) { Text("Retry") }
     }
 }
 

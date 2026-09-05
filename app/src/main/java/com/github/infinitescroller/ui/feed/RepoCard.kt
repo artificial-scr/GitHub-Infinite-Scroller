@@ -15,11 +15,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CallSplit
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,7 +33,9 @@ import com.github.infinitescroller.data.model.GithubRepo
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -97,7 +99,7 @@ fun RepoCard(
                 }
                 repo.pushedAt?.let {
                     Text(
-                        text = "Pushed ${it.toRelativeDate()}",
+                        text = "Pushed ${it.toFormattedDate()}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -108,14 +110,26 @@ fun RepoCard(
                 Spacer(Modifier.height(8.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     repo.topics.take(4).forEach { topic ->
-                        AssistChip(
-                            onClick = {},
-                            label = { Text(topic, style = MaterialTheme.typography.labelSmall) },
-                        )
+                        TopicBadge(topic)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TopicBadge(topic: String) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Text(
+            text = topic,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
     }
 }
 
@@ -128,17 +142,17 @@ private fun StatBadge(icon: @Composable () -> Unit, value: String) {
 }
 
 private fun Int.toCompactString(): String = when {
-    this >= 1_000_000 -> "%.1fM".format(this / 1_000_000f)
-    this >= 1_000 -> "%.1fk".format(this / 1_000f)
+    this >= 1_000_000 -> String.format(Locale.US, "%.1fM", this / 1_000_000f)
+    this >= 1_000 -> String.format(Locale.US, "%.1fk", this / 1_000f)
     else -> toString()
 }
 
-private fun String.toRelativeDate(): String {
+private fun String.toFormattedDate(): String {
     return try {
         val instant = Instant.parse(this)
         val date = instant.atZone(ZoneId.systemDefault()).toLocalDate()
         date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-    } catch (e: Exception) {
+    } catch (e: DateTimeParseException) {
         this
     }
 }

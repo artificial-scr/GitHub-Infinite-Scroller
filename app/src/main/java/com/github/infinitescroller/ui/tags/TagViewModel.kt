@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.github.infinitescroller.data.preferences.TagStore
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -18,9 +17,7 @@ class TagViewModel(
 
     fun toggleTag(tag: String) {
         viewModelScope.launch {
-            val current = tagStore.selectedTags.first().toMutableSet()
-            if (current.contains(tag)) current.remove(tag) else current.add(tag)
-            tagStore.saveTags(current)
+            tagStore.toggleTag(tag)
         }
     }
 }

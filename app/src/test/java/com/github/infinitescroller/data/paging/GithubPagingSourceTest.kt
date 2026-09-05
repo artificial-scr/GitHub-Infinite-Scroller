@@ -42,6 +42,18 @@ class GithubPagingSourceTest {
         ): SearchResponse = throw IOException("Network error")
     }
 
+    private class CapturingApi(private val delegate: GithubApiService) : GithubApiService {
+        var lastPage: Int = -1
+        var lastPerPage: Int = -1
+        override suspend fun searchRepositories(
+            query: String, sort: String, order: String, perPage: Int, page: Int,
+        ): SearchResponse {
+            lastPage = page
+            lastPerPage = perPage
+            return delegate.searchRepositories(query, sort, order, perPage, page)
+        }
+    }
+
     private fun refreshParams(page: Int? = null) =
         PagingSource.LoadParams.Refresh(key = page, loadSize = 20, placeholdersEnabled = false)
 
@@ -80,5 +92,24 @@ class GithubPagingSourceTest {
 
         assertTrue(result is PagingSource.LoadResult.Error)
         assertTrue((result as PagingSource.LoadResult.Error).throwable is IOException)
+    }
+
+    @Test
+    fun `load passes correct page and perPage to API`() = runTest {
+        val capturing = CapturingApi(apiReturning(fakeRepos))
+        val source = GithubPagingSource(capturing, "topic:android")
+        source.load(refreshParams())
+
+        assertEquals(1, capturing.lastPage)
+        assertEquals(20, capturing.lastPerPage)
+    }
+
+    @Test
+    fun `nextKey is null at 1000-result boundary`() = runTest {
+        // page 50 * perPage 20 = 1000 — GitHub's result cap
+        val source = GithubPagingSource(apiReturning(fakeRepos), "topic:android")
+        val result = source.load(refreshParams(page = 50)) as PagingSource.LoadResult.Page
+
+        assertNull(result.nextKey)
     }
 }

@@ -28,10 +28,10 @@ class GithubRepositoryTest {
     }
 
     @Test
-    fun `multiple tags are joined with plus separator`() {
+    fun `multiple tags are joined with OR separator`() {
         val result = repo.buildQuery(setOf("android", "kotlin"))
         assertTrue(result.contains("topic:android"))
         assertTrue(result.contains("topic:kotlin"))
-        assertTrue(result.contains("+"))
+        assertTrue(result.contains(" OR "))
     }
 }

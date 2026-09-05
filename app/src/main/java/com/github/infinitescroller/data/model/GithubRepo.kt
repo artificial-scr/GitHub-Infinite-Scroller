@@ -1,9 +1,7 @@
 package com.github.infinitescroller.data.model
 
 import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 
-@JsonClass(generateAdapter = true)
 data class GithubRepo(
     val id: Long,
     @Json(name = "full_name") val fullName: String,
@@ -18,13 +16,11 @@ data class GithubRepo(
     val owner: Owner,
 )
 
-@JsonClass(generateAdapter = true)
 data class Owner(
     val login: String,
     @Json(name = "avatar_url") val avatarUrl: String,
 )
 
-@JsonClass(generateAdapter = true)
 data class SearchResponse(
     @Json(name = "total_count") val totalCount: Int,
     val items: List<GithubRepo>,

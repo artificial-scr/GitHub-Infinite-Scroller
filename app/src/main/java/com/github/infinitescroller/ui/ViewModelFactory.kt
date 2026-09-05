@@ -13,7 +13,7 @@ import com.github.infinitescroller.ui.tags.TagViewModel
 class ViewModelFactory(context: Context) : ViewModelProvider.Factory {
 
     private val tagPreferences: TagStore = TagPreferences(context.applicationContext)
-    private val repository = GithubRepository(RetrofitClient.githubApiService)
+    private val repository by lazy { GithubRepository(RetrofitClient.githubApiService) }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {

@@ -15,6 +15,7 @@ class GithubRepository(private val api: GithubApiService) {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
+                initialLoadSize = 20,
                 prefetchDistance = 5,
                 enablePlaceholders = false,
             ),
@@ -26,7 +27,7 @@ class GithubRepository(private val api: GithubApiService) {
         return if (tags.isEmpty()) {
             "stars:>1000"
         } else {
-            tags.joinToString(separator = "+") { "topic:$it" }
+            tags.joinToString(separator = " OR ") { "topic:$it" }
         }
     }
 }

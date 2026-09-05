@@ -2,8 +2,6 @@ package com.github.infinitescroller.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +11,9 @@ import com.github.infinitescroller.ui.feed.FeedScreen
 import com.github.infinitescroller.ui.feed.FeedViewModel
 import com.github.infinitescroller.ui.tags.TagScreen
 import com.github.infinitescroller.ui.tags.TagViewModel
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val ROUTE_TAGS = "tags"
 private const val ROUTE_FEED = "feed"
@@ -21,14 +22,16 @@ private const val ROUTE_FEED = "feed"
 fun AppNavigation(factory: ViewModelFactory) {
     val navController = rememberNavController()
     val tagViewModel: TagViewModel = viewModel(factory = factory)
-    val selectedTags by tagViewModel.selectedTags.collectAsState()
 
-    // Once DataStore has emitted and tags exist, jump straight to feed on first launch
-    LaunchedEffect(selectedTags) {
-        val current = navController.currentBackStackEntry?.destination?.route
-        if (selectedTags.isNotEmpty() && current == ROUTE_TAGS) {
+    // On first launch, jump straight to feed if tags are already stored in DataStore
+    LaunchedEffect(Unit) {
+        val initialTags = withTimeoutOrNull(3_000L) {
+            tagViewModel.selectedTags.drop(1).first { it.isNotEmpty() }
+        } ?: tagViewModel.selectedTags.value
+        if (initialTags.isNotEmpty()) {
             navController.navigate(ROUTE_FEED) {
                 popUpTo(ROUTE_TAGS) { inclusive = true }
+                launchSingleTop = true
             }
         }
     }
@@ -40,6 +43,7 @@ fun AppNavigation(factory: ViewModelFactory) {
                 onConfirm = {
                     navController.navigate(ROUTE_FEED) {
                         popUpTo(ROUTE_TAGS) { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
             )
@@ -48,7 +52,11 @@ fun AppNavigation(factory: ViewModelFactory) {
             val feedViewModel: FeedViewModel = viewModel(factory = factory)
             FeedScreen(
                 viewModel = feedViewModel,
-                onOpenTags = { navController.navigate(ROUTE_TAGS) },
+                onOpenTags = {
+                    navController.navigate(ROUTE_TAGS) {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
     }

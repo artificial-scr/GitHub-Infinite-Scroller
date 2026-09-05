@@ -18,6 +18,11 @@ class TagViewModelTest {
         private val _tags = MutableStateFlow(initial)
         override val selectedTags: Flow<Set<String>> = _tags
         override suspend fun saveTags(tags: Set<String>) { _tags.value = tags }
+        override suspend fun toggleTag(tag: String) {
+            val current = _tags.value.toMutableSet()
+            if (current.contains(tag)) current.remove(tag) else current.add(tag)
+            _tags.value = current
+        }
         val savedTags: Set<String> get() = _tags.value
     }
 
