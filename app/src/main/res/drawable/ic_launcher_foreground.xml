@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Three stacked repo cards fading out: an endless feed. Kept inside the 66dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,28 L76,70 H32 Z"/>
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M37,32H71A3.5,3.5 0 0 1 74.5,35.5V42.5A3.5,3.5 0 0 1 71,46H37A3.5,3.5 0 0 1 33.5,42.5V35.5A3.5,3.5 0 0 1 37,32Z" />
+    <path android:fillColor="#FF4353D1"
+        android:pathData="M42,39m-3.5,0a3.5,3.5 0 1,0 7,0a3.5,3.5 0 1,0 -7,0" />
+    <path android:fillColor="#994353D1"
+        android:pathData="M49,36.5H66A1.5,1.5 0 0 1 67.5,38V38A1.5,1.5 0 0 1 66,39.5H49A1.5,1.5 0 0 1 47.5,38V38A1.5,1.5 0 0 1 49,36.5Z" />
+    <path android:fillColor="#B3FFFFFF"
+        android:pathData="M37,50H71A3.5,3.5 0 0 1 74.5,53.5V60.5A3.5,3.5 0 0 1 71,64H37A3.5,3.5 0 0 1 33.5,60.5V53.5A3.5,3.5 0 0 1 37,50Z" />
+    <path android:fillColor="#59FFFFFF"
+        android:pathData="M37,68H71A3.5,3.5 0 0 1 74.5,71.5V74A2,2 0 0 1 72.5,76H35.5A2,2 0 0 1 33.5,74V71.5A3.5,3.5 0 0 1 37,68Z" />
 </vector>
